@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import BarChart from '../components/BarChart';
 import axios from 'axios';
 
@@ -12,29 +12,39 @@ const Dashboard = () => {
     };
 
     // user data 
-    async function populateUserData() {
-
-        const apiUrl = 'https://stg.dhunjam.in/account/admin/' + userId;
-        
-        const req = await fetch(apiUrl);
-        const data = await req.json()
-        console.log(data);
-
-        if (data.response === "Success") {
-                // setting data
-                console.log(data.data);
-                setFormData(data.data);
-                setCategoryData([formData.amount.category_6, formData.amount.category_7, formData.amount.category_8, formData.amount.category_9, formData.amount.category_10])
-                console.log(formData);
+    const populateUserData = useCallback(async () => {
+      try {
+        const apiUrl = `https://stg.dhunjam.in/account/admin/${userId}`;
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+  
+        if (data.response === 'Success') {
+          setFormData(data.data);
         } else {
-                console.log(data)
-          alert(data)
+          console.error(data);
+          alert(data);
         }
-
-    }
-
-    populateUserData();
-
+      } catch (error) {
+        console.error('Error fetching user data', error);
+      }
+    }, [userId]);
+  
+    useEffect(() => {
+      populateUserData();
+    }, [populateUserData]); 
+    
+    useEffect(() => {
+      if (formData) {
+        setCategoryData([
+          formData.amount.category_6,
+          formData.amount.category_7,
+          formData.amount.category_8,
+          formData.amount.category_9,
+          formData.amount.category_10,
+        ]);
+        console.log(formData);
+      }
+    }, [formData]);
 
     // Sample data for the bar graph
     const options = {
