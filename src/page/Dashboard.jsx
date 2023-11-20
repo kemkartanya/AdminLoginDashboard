@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import BarChart from '../components/BarChart';
 import axios from 'axios';
 
 const Dashboard = () => {
-    const [formData, setFormData] = useState({})
-    const [changedData, setChangedData] = useState({})
+    const [formData, setFormData] = useState(null)
+    const [categoryData, setCategoryData] = useState([])
     const userId = sessionStorage.getItem('id')
 
     const handleInputChange = (e) => {
@@ -22,7 +22,9 @@ const Dashboard = () => {
 
         if (data.response === "Success") {
                 // setting data
-                setFormData(data.data)
+                console.log(data.data);
+                setFormData(data.data);
+                setCategoryData([formData.amount.category_6, formData.amount.category_7, formData.amount.category_8, formData.amount.category_9, formData.amount.category_10])
                 console.log(formData);
         } else {
                 console.log(data)
@@ -31,9 +33,7 @@ const Dashboard = () => {
 
     }
 
-    useEffect(() => {
-        populateUserData();
-	  }, [])
+    populateUserData();
 
 
     // Sample data for the bar graph
@@ -56,7 +56,7 @@ const Dashboard = () => {
       datasets: [
         {
           label: 'Categories',
-          data: [formData.amount.category_6, formData.amount.category_7, formData.amount.category_8, formData.amount.category_9, formData.amount.category_10],
+          data: categoryData,
           backgroundColor: 'rgba(251, 178, 216, 0.8)',
         },
       ],
@@ -67,9 +67,9 @@ const Dashboard = () => {
       e.preventDefault();
   
       try {
-        const response = await axios.post(
+        const response = await axios.put(
           'https://stg.dhunjam.in/account/admin/' + userId,
-          changedData 
+          formData 
         );
       
         const data = await response.data
@@ -91,18 +91,18 @@ const Dashboard = () => {
   return (
     <div align="center">
         <h1 className='dashHead'>Social, Hebbal on Dhun Jam</h1>
-        {formData ? 
+        {formData && formData.charge_customers ? 
          <form>
          <div className='dashContent'>
              <div className='charge'>
                  <div className='question'>Do you want to charge your customers for requesting songs?</div>
                  <div className='yes-no'>
                      <div className='radio-button'>
-                         <input type='radio' id='yes' name='yesno' checked={formData.charge_customers} />
+                         <input type='radio' id='yes' name='yesno' checked={formData.charge_customers} onChange={handleInputChange} />
                          <label htmlFor='yes'>Yes</label>
                      </div>
                      <div className='radio-button'>
-                         <input type='radio' id='no' name='yesno' checked={!formData.charge_customers} />
+                         <input type='radio' id='no' name='yesno' checked={!formData.charge_customers} onChange={handleInputChange} />
                          <label htmlFor='no'>No</label>
                      </div>
                  </div>
@@ -110,7 +110,10 @@ const Dashboard = () => {
              </div>
              <div className='part'>
                  <div className='question'>Custom song request amount-</div>
-                 <input className='button1' placeholder='e.g. $60' value={formData.amount.category_6} onChange={handleInputChange} />
+                 <input className='button1' 
+                  placeholder='e.g. $60' 
+                  value={formData.amount.category_6} 
+                  onChange={handleInputChange} />
              </div>
              <div className='part'>
                  <div className='question'>Regular song request amounts, from high to low-</div>
@@ -143,7 +146,7 @@ const Dashboard = () => {
          </div>
         </form>
         :
-        <div>Loading...</div>
+        <div></div>
         }  
     </div>
   )
