@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import BarChart from '../components/BarChart';
-import faker from 'faker';
+import axios from 'axios';
 
 const Dashboard = () => {
-
     const [formData, setFormData] = useState({})
-
+    const [changedData, setChangedData] = useState({})
     const userId = sessionStorage.getItem('id')
 
     const handleInputChange = (e) => {
@@ -18,22 +17,23 @@ const Dashboard = () => {
         const apiUrl = 'https://stg.dhunjam.in/account/admin/' + userId;
         
         const req = await fetch(apiUrl);
-		const data = await req.json()
+        const data = await req.json()
+        console.log(data);
 
-		if (data.response === "Success") {
-            // setting data
-            setFormData(data.data)
-            console.log(formData);
-		} else {
-            console.log(data)
-			alert(data)
-		}
+        if (data.response === "Success") {
+                // setting data
+                setFormData(data.data)
+                console.log(formData);
+        } else {
+                console.log(data)
+          alert(data)
+        }
 
     }
 
     useEffect(() => {
         populateUserData();
-	}, [])
+	  }, [])
 
 
     // Sample data for the bar graph
@@ -47,7 +47,7 @@ const Dashboard = () => {
             display: true,
           },
         },
-      };
+    };
     
     const labels = ['Custom', 'Category 1', 'Category 2', 'Category 3', 'Category 4'];
     
@@ -56,10 +56,36 @@ const Dashboard = () => {
       datasets: [
         {
           label: 'Categories',
-          data: labels.map(() => faker.datatype.number({ min: 0, max: 1000 })),
+          data: [formData.amount.category_6, formData.amount.category_7, formData.amount.category_8, formData.amount.category_9, formData.amount.category_10],
           backgroundColor: 'rgba(251, 178, 216, 0.8)',
         },
       ],
+    };
+
+    // admin data put api
+    const handleSave = async (e) => {
+      e.preventDefault();
+  
+      try {
+        const response = await axios.post(
+          'https://stg.dhunjam.in/account/admin/' + userId,
+          changedData 
+        );
+      
+        const data = await response.data
+  
+        if (data) {
+          console.log(data);
+          
+          populateUserData();
+
+        } else {
+          alert('Please check your username and password')
+        }
+      
+      } catch (error) {
+        console.error('Login failed', error);
+      }
     };
 
   return (
@@ -89,16 +115,31 @@ const Dashboard = () => {
              <div className='part'>
                  <div className='question'>Regular song request amounts, from high to low-</div>
                  <div>
-                     <input className='button2' placeholder='$33' value={formData.amount.category_7} onChange={handleInputChange} />
-                     <input className='button2' placeholder='$33' value={formData.amount.category_8} onChange={handleInputChange} />
-                     <input className='button2' placeholder='$33' value={formData.amount.category_9} onChange={handleInputChange} />
-                     <input className='button2' placeholder='$33' value={formData.amount.category_10} onChange={handleInputChange} />
+                     <input className='button2' 
+                      placeholder='$33' 
+                      value={formData.amount.category_7} 
+                      onChange={handleInputChange} />
+                     <input 
+                      className='button2' 
+                      placeholder='$33' 
+                      value={formData.amount.category_8} 
+                      onChange={handleInputChange} />
+                     <input 
+                      className='button2' 
+                      placeholder='$33' 
+                      value={formData.amount.category_9} 
+                      onChange={handleInputChange} />
+                     <input 
+                      className='button2' 
+                      placeholder='$33' 
+                      value={formData.amount.category_10} 
+                      onChange={handleInputChange} />
                  </div>
              </div>
          </div>
          <div className='graph-container'>
              <BarChart data={data} options={options} />
-             <button className='button save'>Save</button>
+             <button type='submit' className='button save' onClick={handleSave}>Save</button>
          </div>
         </form>
         :
